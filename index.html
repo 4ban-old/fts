@@ -1,0 +1,130 @@
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8"/> 
+		<title></title>
+		<script type="text/javascript" src="fts.js"></script>
+		<script type="text/javascript" src="database.js"></script>
+		<script type="text/javascript" src="jquery-1.11.0.js"></script>
+		<!--<link href="./css/style.css" rel="stylesheet">-->
+		<style>
+		.abs{ color:#eee; }
+		.abs:hover{ color:#000; }
+		.modalDialog {
+    		position: fixed;
+    		font-family: Arial, Helvetica, sans-serif;
+    		top: 0;
+    		right: 0;
+    		bottom: 0;
+    		left: 0;
+    		background: rgba(0,0,0,0.6);
+    		z-index: 99999;
+    		-webkit-transition: opacity 400ms ease-in;
+    		-moz-transition: opacity 400ms ease-in;
+    		transition: opacity 400ms ease-in;
+    		display: none;
+    		pointer-events: none; }
+    	.modalDialog:target {
+ 		    display: block;
+    		pointer-events: auto; }
+ 		.modalDialog > div {
+ 			width: 800px;
+ 		    position: relative;
+ 		    margin: 10% auto;
+ 		    padding: 5px 20px 13px 20px;
+ 		    border-radius: 10px;
+ 		    background: #e4e4e4;
+ 		    background: -webkit-gradient(linear, 0 0, 0 100%, from(#e4e4e4), to(#e6e6e6));
+ 		    background: -webkit-linear-gradient(#e4e4e4, #e6e6e6);
+ 		    background: -moz-linear-gradient(#e4e4e4, #e6e6e6);
+ 		    background: -o-linear-gradient(#e4e4e4, #e6e6e6);
+ 		    background: linear-gradient(#e4e4e4, #e6e6e6); }
+		.close {
+    		background: #606061;
+    		color: #FFFFFF;
+    		line-height: 25px;
+    		position: absolute;
+    		right: -12px;
+    		text-align: center;
+    		top: -10px;
+    		width: 24px;
+    		text-decoration: none;
+    		font-weight: bold;
+    		-webkit-border-radius: 12px;
+    		-moz-border-radius: 12px;
+    		border-radius: 12px;
+    		-moz-box-shadow: 1px 1px 3px #000;
+    		-webkit-box-shadow: 1px 1px 3px #000;
+    		box-shadow: 1px 1px 3px #000; }
+		.close:hover { background: #232323; }
+		</style>
+	</head>
+<body onload="initDB()">
+<div>
+	<a href="#openModal">Меню</a>
+	<div id="openModal" class="modalDialog">
+    	<div>
+        	<a href="#close" title="Закрыть" class="close">X</a>
+			<!-- форма для ручного ввода слова в словарь -->
+			Заполнение словаря:
+			<input type="text" id="newWord" class="inp" placeholder="Слово">
+			<input type="text" id="newRoot" class="inp" placeholder="Корень">
+			<input type="submit" formaction="#close" onclick="addDictionary(), location.href='#close'" value="Отправить">
+			<!-- форма для ввода текста -->
+			<hr>
+			<textarea id="textForPorter" class="inp_area" cols="97" rows="6" placeholder="Введите аннотацию для автоматического заполнения словаря и индексации"></textarea>
+			<button type="submit" onclick="initAnnotation(), location.href='#close'">Отправить</button>
+			<!-- Кнопки, в принципе ненужные пока -->
+			<hr>
+			<button type="submit" onclick="selectTables(), location.href='#close'">Создать XML</button>
+			<button type="submit" onclick="deleteFromTables(), location.href='#close'">Очистить БД</button>
+			<hr>
+			<!-- форма для ручного заполнения таблицы индексов turnword-->
+			<input type="text" id="nom" placeholder="id" disabled>
+			<input type="text" id="graphnom" placeholder="Номер аннотации" disabled>
+			<input type="text" id="index_word" placeholder="слово" disabled>
+			<input type="text" id="turn" placeholder="Номер слова" disabled>
+			<input type="submit" onclick="addTurnword(), location.href='#close'" disabled value="Отправить">
+    	</div>
+	</div>
+	<!-- вывод информации, загрузилась ли бд, триггеры и таблицы-->
+	<div id="test" style="font-size:11px;"></div>
+	<!--форма для поискового запроса -->
+	<input type="text" id="word" autocomplete="on" placeholder="Поиск...">
+	<button type="submit" onclick="searchRequest()">Отправить</button>
+</div>
+<hr>
+<div class="result" style="width:100%;">
+	<!-- вывод таблицы индексов -->
+	<div id="turnword" style="float:right;"></div>
+	<!-- вывод таблицы graphics с аннотациями -->
+	<div id="annotation" style=""></div>
+	<!-- вывод результатов обработки текста при автоматическом занесении в словарь -->
+	<div id="wordArr"></div>
+</div>
+<script>
+	document.onkeydown = hotkeys;
+	function hotkeys(key){
+		if (!key){
+			key = window.event;
+		}
+		var p = key.keyCode;
+		if (key.altkey){
+			if (p == 89){
+				location.href = 'http://include.cc';
+			}
+			if (p == 71){
+				var hello = 'hello world';
+			}
+		}
+		else{
+			if (p == 27){
+				location.href = '#close';
+			}
+			if (p == 18){
+				location.href = '#openModal';
+			}
+		}
+	}
+</script>
+</body>
+</html>
