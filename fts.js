@@ -65,14 +65,14 @@ var database=openDatabase('Annotations', '1.0', 'Annotations', 512*1024*1024);
                 for(var i=0;i<results.rows.length;i++){
                     if (graphnom[i] != graphnom[i+1] && graphnom[i] != -1 ){
                         //searchAnnotation(graphnom[i]);
-                        temp_turn.push(turn[i]);
-                        searchAnnotation(graphnom[i], temp_turn);
-                        temp_turn=[];
+                        //temp_turn.push(turn[i]);
+                        searchAnnotation(graphnom[i], root);
+                        //temp_turn=[];
 
                     }
-                    else{
-                        temp_turn.push(turn[i]);
-                    }
+                    //else{
+                      //  temp_turn.push(turn[i]);
+                    //}
                 }
             },
             killTransaction
@@ -82,7 +82,7 @@ var database=openDatabase('Annotations', '1.0', 'Annotations', 512*1024*1024);
 
 }
 //поиск в graphics корня, вывод аннотации.
-function searchAnnotation(graphnom, temp_turn){
+function searchAnnotation(graphnom, root){
 var database=openDatabase('Annotations', '1.0', 'Annotations', 512*1024*1024);  
         database.transaction (
         function(transaction){
@@ -103,13 +103,15 @@ var database=openDatabase('Annotations', '1.0', 'Annotations', 512*1024*1024);
                 //for(var i=0;i<results.rows.length;i++){
                     nom = results.rows.item(0)['NOM'];
                     annotation = results.rows.item(0)['ANNOTATION'];
-                for(var i=0;i<temp_turn.length;i++){
+                    //for(var i=0;i<temp_turn.length;i++){
                     //подсветка слов
-                    var rrr=annotation.replace(/[^а-яА-Я0-9 ]/g, '').split(' ')[temp_turn[i]];
+                        //var rrr=annotation.replace(/[^а-яА-Я0-9 ]/g, '').split(' ')[temp_turn[i]];
                     //убрать все слова из текста длиннее 2 символов и исключить слова из стоп.листа
-                    annotation = annotation.replace(rrr,'<i style="color:#ffffff; background-color:#0000ff;">'+rrr+'</i>');
-                }
+                    //annotation = annotation.split(' ')[temp_turn[i]].replace(temp_turn[i],'<i style="color:#ffffff; background-color:#0000ff;">'+temp_turn[i]+'</i>');
+                    //}
                     //alert("element"+i+"="+word[i]);
+                    regex = new RegExp(root+"([а-яА-я0-9_])*", "gi");
+                    annotation = annotation.replace(regex,'<i style="color:#ffffff; background-color:#0000ff;">'+"\$&"+'</i>');
                     html+='<tr><td>'+nom+'</td><td>'+annotation+'</td></tr>';
                 //конец убранного лишнего цикла
                 //}
