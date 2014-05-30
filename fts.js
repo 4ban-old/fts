@@ -21,7 +21,13 @@ word=word.toLowerCase();
             //для результатов, ставится эта функция вместо nullDataHandler
             function(transaction, results){ 
                 //записываем в root езультат запроса
+                try {
                 var root = results.rows.item(0)['KOREN'];
+                }
+                catch(e){
+                    document.getElementById('annotation').innerHTML="Ничего не найдено!";
+                    return 0;
+                }
                 //alert("root="+root);
                 //вызываем функцию с передачей переменной
                 searchIndex(root);
@@ -152,7 +158,8 @@ function initAnnotation(){
     html+='</table>';
     //выводит результат, массив оригинальный и массив сокращенных слов
     document.getElementById('wordArr').innerHTML=html;
-    addAnnotation(textForPorter, wordArrPorter);
+    //addAnnotation(textForPorter, wordArrPorter);
+    matchRequestAnnotation(textForPorter, wordArrPorter);
     //собственно ввод массивов в словарь с ограничениями, типа два символа и стоп слова... не работает    
     for(var i=0;i<wordArr.length;i++){
         if(wordArr[i].length>2){
@@ -175,6 +182,9 @@ var database=openDatabase('Annotations', '1.0', 'Annotations', 512*1024*1024);
                 if(results.rows.length == 0){
                     addRoot(wordArr, wordArrPorter);
                 }
+                else{
+                    document.getElementById('result').innerHTML+="["+wordArr+"]-уже существует в словаре<br>";
+                }
             },
             killTransaction
             );
@@ -191,6 +201,28 @@ var database=openDatabase('Annotations', '1.0', 'Annotations', 512*1024*1024);
             "INSERT INTO RUSDICTIONARY (WORD, KOREN) values (?,?);",
             [wordArr, wordArrPorter],
             nullDataHandler,
+            killTransaction
+            );
+        }
+    );
+}
+
+//Делает запрос в бд по слову... должна вызываться в цикле и сравнивать, если ли слово из массива в словаре или нет.
+function matchRequestAnnotation(textForPorter, wordArrPorter){
+var database=openDatabase('Annotations', '1.0', 'Annotations', 512*1024*1024);
+    database.transaction (
+        function(transaction){
+            transaction.executeSql(
+            "SELECT ANNOTATION FROM GRAPHICS WHERE ANNOTATION='"+textForPorter+"';",
+            [],
+            function(transaction, results){
+                if(results.rows.length == 0){
+                    addAnnotation(textForPorter, wordArrPorter);
+                }
+                else{
+                    document.getElementById('result_annotation').innerHTML="Аннотация уже существует";
+                }
+            },
             killTransaction
             );
         }
