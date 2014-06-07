@@ -1,3 +1,6 @@
+//Глобальная переменная для замера времени
+//var starttime;
+
 //                  ######  ########    ###    ########   ######  ##     ## 
 //                  ##    ## ##         ## ##   ##     ## ##    ## ##     ## 
 //                  ##       ##        ##   ##  ##     ## ##       ##     ## 
@@ -5,7 +8,7 @@
 //                        ## ##       ######### ##   ##   ##       ##     ## 
 //                  ##    ## ##       ##     ## ##    ##  ##    ## ##     ## 
 //                   ######  ######## ##     ## ##     ##  ######  ##     ## 
-//поиск слова в словаре, запись корня в переменную
+//поиск слова в словаре, передача его в searchindex
 function searchRequest(){
 document.getElementById('annotation').innerHTML="";
 document.getElementById('turnword').innerHTML="";
@@ -18,17 +21,16 @@ word=word.toLowerCase();
             transaction.executeSql(
             "SELECT KOREN FROM RUSDICTIONARY WHERE WORD='"+word+"';",
             [],
-            //для результатов, ставится эта функция вместо nullDataHandler
             function(transaction, results){ 
                 //записываем в root езультат запроса
                 try {
                 var root = results.rows.item(0)['KOREN'];
                 }
                 catch(e){
+                    //Если нет результата, вывести сообщение
                     document.getElementById('annotation').innerHTML="Ничего не найдено!";
                     return 0;
                 }
-                //alert("root="+root);
                 //вызываем функцию с передачей переменной
                 searchIndex(root);
             },
@@ -51,14 +53,13 @@ var database=openDatabase('Annotations', '1.0', 'Annotations', 512*1024*1024);
                 var graphnom=[];
                 var word=[];
                 var turn=[];
-                //кривой способ записать результат сразу в виде таблицы в переменную html, чтобы потом ее передать в div, который создан на index.html
+                //записать результат сразу в виде таблицы в переменную html, чтобы потом ее передать в div, который создан на index.html
                 var html='<table border="1" style="margin: 5px 5px 5px 5px;background-color:#eeeee4; border-radius:5px;"><tr style="background-color:#fde910"><td colspan="3">Индексная таблица</td></tr><tr style="background-color:#fde910"><td>Номер аннотации</td><td>Слово</td><td>Очередь</td></tr>';
                 for(var i=0;i<results.rows.length;i++){
                     nom[i] = results.rows.item(i)['NOM'];
                     graphnom[i] = results.rows.item(i)['GRAPHNOM'];
                     word[i] = results.rows.item(i)['WORD'];
                     turn[i] = results.rows.item(i)['TURN'];
-                    //alert("element"+i+"="+word[i]);
                     //собственно сами результаты записываются
                     //html+='<tr><td>'+nom[i]+'</td><td>'+graphnom[i]+'</td><td>'+word[i]+'</td><td>'+turn[i]+'</td></tr>';
                     html+='<tr><td>'+graphnom[i]+'</td><td>'+word[i]+'</td><td>'+turn[i]+'</td></tr>';
@@ -68,24 +69,17 @@ var database=openDatabase('Annotations', '1.0', 'Annotations', 512*1024*1024);
                 document.getElementById('turnword').innerHTML=html;
                 graphnom.push(-1);
                 temp_turn=[];
+                //Передаем номер аннотации с проверкой на дублирование, чтобы аннотации не дублировались
                 for(var i=0;i<results.rows.length;i++){
                     if (graphnom[i] != graphnom[i+1] && graphnom[i] != -1 ){
-                        //searchAnnotation(graphnom[i]);
-                        //temp_turn.push(turn[i]);
                         searchAnnotation(graphnom[i], root);
-                        //temp_turn=[];
-
                     }
-                    //else{
-                      //  temp_turn.push(turn[i]);
-                    //}
                 }
             },
             killTransaction
             );
         }
     );
-
 }
 //поиск в graphics корня, вывод аннотации.
 function searchAnnotation(graphnom, root){
@@ -109,13 +103,7 @@ var database=openDatabase('Annotations', '1.0', 'Annotations', 512*1024*1024);
                 //for(var i=0;i<results.rows.length;i++){
                     nom = results.rows.item(0)['NOM'];
                     annotation = results.rows.item(0)['ANNOTATION'];
-                    //for(var i=0;i<temp_turn.length;i++){
-                    //подсветка слов
-                        //var rrr=annotation.replace(/[^а-яА-Я0-9 ]/g, '').split(' ')[temp_turn[i]];
-                    //убрать все слова из текста длиннее 2 символов и исключить слова из стоп.листа
-                    //annotation = annotation.split(' ')[temp_turn[i]].replace(temp_turn[i],'<i style="color:#ffffff; background-color:#0000ff;">'+temp_turn[i]+'</i>');
-                    //}
-                    //alert("element"+i+"="+word[i]);
+                    //Подсветка слов
                     regex = new RegExp(root+"([а-яА-я0-9_])*", "gi");
                     annotation = annotation.replace(regex,'<i style="color:#ffffff; background-color:#0000ff;">'+"\$&"+'</i>');
                     html+='<tr><td>'+nom+'</td><td>'+annotation+'</td></tr>';
@@ -139,6 +127,7 @@ var database=openDatabase('Annotations', '1.0', 'Annotations', 512*1024*1024);
 //                      ##     ## ########  ########  #### ##    ##  ######      
 //функция для обработки текста, для последующего занесения в словарь
 function initAnnotation(){
+    //starttime = +new Date();
     var textForPorter=document.getElementById('textForPorter').value;
     //delete special symbols
     //числа я не удаляю, могут занимать целое слово и при удалении сбить нумерацию.
@@ -159,6 +148,7 @@ function initAnnotation(){
     //выводит результат, массив оригинальный и массив сокращенных слов
     document.getElementById('wordArr').innerHTML=html;
     //addAnnotation(textForPorter, wordArrPorter);
+    //проверка на повторные аннотации в БД
     matchRequestAnnotation(textForPorter, wordArrPorter);
     //собственно ввод массивов в словарь с ограничениями, типа два символа и стоп слова... не работает    
     for(var i=0;i<wordArr.length;i++){
@@ -168,6 +158,7 @@ function initAnnotation(){
             }
         }
     }
+    //console.log("add annotation: ",+new Date()-starttime,"ms");
 }
 
 //Делает запрос в бд по слову... должна вызываться в цикле и сравнивать, если ли слово из массива в словаре или нет.

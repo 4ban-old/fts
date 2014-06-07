@@ -71,8 +71,9 @@
 			<input type="submit" formaction="#close" onclick="addDictionary(), location.href='#close'" value="Отправить">
 			<!-- форма для ввода текста -->
 			<hr>
-			<textarea id="textForPorter" class="inp_area" cols="97" rows="6" placeholder="Введите аннотацию для автоматического заполнения словаря и индексации"></textarea>
+			<textarea id="textForPorter" class="inp_area" cols="97" rows="6" maxlength="500" onkeypress="check_length(this)" on placeholder="Введите аннотацию для автоматического заполнения словаря и индексации"></textarea>
 			<button type="submit" onclick="initAnnotation(), location.href='#close'">Отправить</button>
+			<small>Длина: </small><font color="#ff0000"><small id="ident"></small><small>/500</small></font>
 			<!-- Кнопки, в принципе ненужные пока -->
 			<hr>
 			<button type="submit" onclick="selectTables(), location.href='#close'">Создать XML</button>
@@ -126,6 +127,9 @@
 				location.href = '#openModal';
 			}
 		}
+	}
+	function check_length(ident){
+		document.getElementById("ident").innerHTML=ident.value.length;
 	}
 </script>
 </body>
